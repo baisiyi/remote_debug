@@ -47,17 +47,21 @@ func (c *Client) Do(
 	body io.Reader,
 	headers map[string]string,
 ) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-
 	url := fmt.Sprintf("%s/%s", c.CliURL, path)
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
+
+	// 设置默认 headers
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
+
+	// 设置超时头信息，让 server 端知道客户端的超时设置
+	timeoutSeconds := int(c.Timeout.Seconds())
+	req.Header.Set("X-Timeout", fmt.Sprintf("%d", timeoutSeconds))
+
 	return c.doRequest(ctx, req)
 }
 
