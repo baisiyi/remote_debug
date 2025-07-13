@@ -33,7 +33,7 @@ func NewClient() *Client {
 			return
 		}
 		url := fmt.Sprintf("http://%s:%s", cfg.RemoteAddress.RemoteIP, cfg.RemoteAddress.RemotePort)
-		timeout := cfg.RemoteAddress.Timeout * time.Second
+		timeout := cfg.RemoteAddress.Timeout
 		cli := &http.Client{}
 		client = &Client{Cli: cli, CliURL: url, Timeout: timeout}
 	})

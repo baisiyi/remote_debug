@@ -60,26 +60,29 @@ func (a *Impl) CommandHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // executeCommand 执行命令
-func (a *Impl) executeCommand(req model.CommandRequest) (string, error) {
-	cmd := exec.Command(req.Command, req.Args...)
+func (a *Impl) executeCommand(req model.CommandRequest) ([]string, error) {
+	var ret []string
+	for _, command := range req.PipeLine {
+		cmd := exec.Command(command.Root, command.Args...)
 
-	// 设置工作目录
-	if req.WorkDir != "" {
-		cmd.Dir = req.WorkDir
+		// 设置工作目录
+		if command.WorkDir != "" {
+			cmd.Dir = command.WorkDir
+		}
+
+		// 设置环境变量
+		if len(command.Env) > 0 {
+			cmd.Env = append(os.Environ(), command.Env...)
+		}
+
+		// 执行命令并获取输出
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return ret, fmt.Errorf("command execution failed: %w", err)
+		}
+		ret = append(ret, string(output))
 	}
-
-	// 设置环境变量
-	if len(req.Env) > 0 {
-		cmd.Env = append(os.Environ(), req.Env...)
-	}
-
-	// 执行命令并获取输出
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(output), fmt.Errorf("command execution failed: %w", err)
-	}
-
-	return string(output), nil
+	return ret, nil
 }
 
 // UploadHandler 文件上传处理
@@ -103,7 +106,7 @@ func (a *Impl) UploadHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// 创建上传目录
-	uploadDir := "./uploads"
+	uploadDir := "./bin"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		http.Error(w, "Failed to create upload directory", http.StatusInternalServerError)
 		return

@@ -4,33 +4,37 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/knadh/koanf/v2"
+	"github.com/spf13/viper"
 )
 
-var KfObject *koanf.Koanf
-
 const (
-	DefaultConfigName = "./config.yaml"
+	DefaultConfigName = "config.yaml"
 	DefaultTimeout    = 10 * time.Second
 )
 
-type Config struct {
-	ProjectPath   string `yaml:"project_path"`
-	RemoteAddress struct {
-		RemoteIP   string        `yaml:"remote_ip"`
-		RemotePort string        `yaml:"remote_port"`
-		DestPath   string        `yaml:"dest_path"`
-		Timeout    time.Duration `yaml:"timeout"`
-	}
+type RemoteAddress struct {
+	RemoteIP   string        `mapstructure:"remote_ip"`
+	RemotePort string        `mapstructure:"remote_port"`
+	DestPath   string        `mapstructure:"dest_path"`
+	Timeout    time.Duration `mapstructure:"timeout"`
 }
 
-// GetConfig 获取配置
+type Config struct {
+	ProjectPath   string        `mapstructure:"project_path"`
+	RemoteAddress RemoteAddress `mapstructure:"remote_address"`
+}
+
+// GetConfig 使用全局viper解析yaml配置
 func GetConfig() (*Config, error) {
-	c := &Config{}
-	err := KfObject.Unmarshal("", c)
-	if err != nil {
-		return nil, err
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("读取配置文件失败: %w", err)
 	}
+
+	c := &Config{}
+	if err := viper.Unmarshal(c); err != nil {
+		return nil, fmt.Errorf("解析配置失败: %w", err)
+	}
+
 	if err := checkConfig(c); err != nil {
 		return nil, fmt.Errorf("配置不完整, 请检查, err: %s", err.Error())
 	}

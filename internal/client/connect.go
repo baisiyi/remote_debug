@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/siyibai/remote_debug/internal/model"
 )
 
@@ -21,8 +22,9 @@ func NewSerApi() *SerApi {
 	}
 }
 
-func (s *SerApi) RunCommand(ctx context.Context, req *model.RunCommandReq) (err error) {
+func (s *SerApi) RunCommand(ctx context.Context, req *model.CommandRequest) (err error) {
 	reqByte, _ := json.Marshal(req)
+	fmt.Println(string(reqByte))
 	_, err = s.client.Post(ctx, "command", reqByte)
 	if err != nil {
 		return err
@@ -31,7 +33,7 @@ func (s *SerApi) RunCommand(ctx context.Context, req *model.RunCommandReq) (err 
 }
 
 func (s *SerApi) UploadFile(ctx context.Context, filePath string) (err error) {
-	_, err = s.client.UploadFile(ctx, "upload_file", filePath)
+	_, err = s.client.UploadFile(ctx, "upload", filePath)
 	if err != nil {
 		return err
 	}

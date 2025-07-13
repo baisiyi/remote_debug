@@ -15,7 +15,7 @@ func main() {
 	// 从环境变量或命令行参数获取端口
 	port := os.Getenv("AGENT_PORT")
 	if port == "" {
-		port = "8080" // 默认端口
+		port = "8081" // 默认端口
 	}
 
 	// 创建并启动 agent server

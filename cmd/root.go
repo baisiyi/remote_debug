@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"os"
 
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/file"
-	"github.com/knadh/koanf/v2"
 	"github.com/mitchellh/go-homedir"
 	"github.com/siyibai/remote_debug/cmd/debug"
 	"github.com/siyibai/remote_debug/config"
@@ -35,7 +33,6 @@ func init() {
 }
 
 func initConfig() {
-	config.KfObject = koanf.New(".")
 	if cfgFile == "" {
 		home, err := homedir.Dir()
 		if err != nil {
@@ -44,9 +41,7 @@ func initConfig() {
 		}
 		cfgFile = fmt.Sprintf("%s/%s", home, config.DefaultConfigName)
 	}
-
-	if err := config.KfObject.Load(file.Provider(cfgFile), yaml.Parser()); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	viper.SetConfigFile(cfgFile)
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
 }
