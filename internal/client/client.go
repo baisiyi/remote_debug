@@ -75,7 +75,7 @@ func (c *Client) Get(ctx context.Context, path string, headers map[string]string
 	return c.Do(ctx, "GET", path, nil, headers)
 }
 
-func (c *Client) UploadFile(ctx context.Context, path string, filePath string) ([]byte, error) {
+func (c *Client) UploadFile(ctx context.Context, path string, filePath string, destPath string) ([]byte, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -84,6 +84,12 @@ func (c *Client) UploadFile(ctx context.Context, path string, filePath string) (
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
+
+	// 添加目标路径字段
+	if err := writer.WriteField("dest_path", destPath); err != nil {
+		return nil, err
+	}
+
 	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/siyibai/remote_debug/internal/model"
 )
 
@@ -22,20 +23,19 @@ func NewSerApi() *SerApi {
 	}
 }
 
-func (s *SerApi) RunCommand(ctx context.Context, req *model.CommandRequest) (err error) {
+func (s *SerApi) RunCommand(ctx context.Context, req *model.CommandRequest) (
+	rsp *model.CommandResponse, err error) {
 	reqByte, _ := json.Marshal(req)
 	fmt.Println(string(reqByte))
-	_, err = s.client.Post(ctx, "command", reqByte)
+	rspByte, err := s.client.Post(ctx, "command", reqByte)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	_ = json.Unmarshal(rspByte, &rsp)
 	return
 }
 
-func (s *SerApi) UploadFile(ctx context.Context, filePath string) (err error) {
-	_, err = s.client.UploadFile(ctx, "upload", filePath)
-	if err != nil {
-		return err
-	}
+func (s *SerApi) UploadFile(ctx context.Context, filePath string, destPath string) (err error) {
+	_, err = s.client.UploadFile(ctx, "upload", filePath, destPath)
 	return
 }

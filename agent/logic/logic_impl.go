@@ -3,12 +3,13 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/siyibai/remote_debug/agent/model"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/siyibai/remote_debug/agent/model"
 )
 
 type Impl struct {
@@ -105,15 +106,20 @@ func (a *Impl) UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	// 获取目标路径，如果没有提供则使用默认路径
+	destPath := r.FormValue("dest_path")
+	if destPath == "" {
+		destPath = "./bin" // 默认路径
+	}
+
 	// 创建上传目录
-	uploadDir := "./bin"
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+	if err := os.MkdirAll(destPath, 0755); err != nil {
 		http.Error(w, "Failed to create upload directory", http.StatusInternalServerError)
 		return
 	}
 
 	// 保存文件
-	filePath := filepath.Join(uploadDir, header.Filename)
+	filePath := filepath.Join(destPath, header.Filename)
 	dst, err := os.Create(filePath)
 	if err != nil {
 		http.Error(w, "Failed to create file", http.StatusInternalServerError)

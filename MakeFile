@@ -1,11 +1,13 @@
 .PHONY: agent dlv clean
 
 agent:
-	docker build -t remote_debug:v1.0 -f agent/Dockerfile .
+	docker build -t remote_debug:latest -f agent/Dockerfile .
 
 dlv:
 	go build -o remote_dlv
 
 clean:
 	rm -f remote_dlv
-	docker rmi remote_debug:v1.0 2>/dev/null || true
+	docker rmi remote_debug:latest 2>/dev/null || true
+
+# docker-compose -f docker-compose.dev.yaml up -d

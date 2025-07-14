@@ -2,5 +2,5 @@ project_path: "/Users/Zhuanz/Documents/go/cmd/apiserver"
 remote_address:
   remote_ip: "localhost"
   remote_port: "8081"
-  dest_path: "/app"
+  dest_path: "/"
   timeout: 10s
