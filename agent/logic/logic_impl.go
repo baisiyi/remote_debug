@@ -42,22 +42,17 @@ func (a *Impl) CommandHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 执行命令
-	response := model.CommandResponse{}
-	output, err := a.executeCommand(req)
-	if err != nil {
-		response.Success = false
-		response.Error = err.Error()
-	} else {
-		response.Success = true
-		response.Output = output
-	}
+	// 异步执行命令
+	go func(req model.CommandRequest) {
+		_, _ = a.executeCommand(req)
+	}(req)
 
+	// 立即返回响应
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		return
-	}
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "command started",
+	})
 }
 
 // executeCommand 执行命令

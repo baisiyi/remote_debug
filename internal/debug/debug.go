@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/siyibai/remote_debug/internal/client"
 	"github.com/siyibai/remote_debug/internal/model"
@@ -56,9 +57,23 @@ func (d *DebugImpl) Debug(ctx context.Context) {
 }
 
 func (d *DebugImpl) buildProject(ctx context.Context, projectPath string) (err error) {
-	// 编译
-	err = d.runCommandWithDir(ctx, projectPath, "go", "build", "-gcflags", "all=-N -l", "-o", ObjectName)
+
+	cfg, err := config.GetConfig()
 	if err != nil {
+		fmt.Printf("获取配置失败：%v", err)
+		return
+	}
+	buildCmd := exec.Command("sh", "-c", fmt.Sprintf(cfg.BuildCmdFmt, ObjectName))
+	buildCmd.Dir = projectPath
+	buildCmd.Stdout = os.Stdout
+	buildCmd.Stderr = os.Stderr
+	// 设置交叉编译环境变量
+	if cfg.CrossCompileCmd != "" {
+		cross := strings.Split(cfg.CrossCompileCmd, " ")
+		buildCmd.Env = append(os.Environ(), cross...)
+	}
+	if err = buildCmd.Run(); err != nil {
+		fmt.Printf("编译失败：err:%v", err)
 		return
 	}
 	return
@@ -85,30 +100,32 @@ func (d *DebugImpl) runProject(ctx context.Context) {
 		fmt.Printf("获取配置失败：%v", err)
 		return
 	}
+	dlvCmd := "dlv exec %s --headless --listen=:2345 --accept-multiclient %s"
+	if cfg.RunCmdFmt != "" {
+		options := strings.Split(cfg.RunCmdFmt, " ")
+		dlvCmd = fmt.Sprintf(dlvCmd, ObjectName, strings.Join(append([]string{"--"}, options[1:]...), " "))
+	} else {
+		dlvCmd = fmt.Sprintf(dlvCmd, ObjectName, "")
+	}
 
 	runCmd := model.Command{
-		Root:    "dlv",
-		Args:    []string{"exec", ObjectName, "--port=8080", "--", "-config", "/config.yaml"},
+		Root:    "sh",
+		Args:    []string{"-c", dlvCmd},
 		WorkDir: cfg.RemoteAddress.DestPath,
 		Env:     []string{},
 	}
-	rsp, err := d.serApi.RunCommand(ctx, &model.CommandRequest{
-		PipeLine: []model.Command{runCmd},
+
+	preCmd := model.Command{
+		Root:    "chmod",
+		Args:    []string{"+x", ObjectName},
+		WorkDir: cfg.RemoteAddress.DestPath,
+		Env:     []string{},
+	}
+
+	_, err = d.serApi.RunCommand(ctx, &model.CommandRequest{
+		PipeLine: []model.Command{preCmd, runCmd},
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(rsp)
-}
-
-func (d *DebugImpl) runCommandWithDir(ctx context.Context, dir, name string, args ...string) (err error) {
-	buildCmd := exec.Command(name, args...)
-	buildCmd.Dir = dir
-	buildCmd.Stdout = os.Stdout
-	buildCmd.Stderr = os.Stderr
-	if err = buildCmd.Run(); err != nil {
-		fmt.Printf("编译失败：err:%v", err)
-		return
-	}
-	return
 }

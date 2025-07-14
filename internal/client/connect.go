@@ -3,8 +3,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-
 	"github.com/siyibai/remote_debug/internal/model"
 )
 
@@ -26,7 +24,6 @@ func NewSerApi() *SerApi {
 func (s *SerApi) RunCommand(ctx context.Context, req *model.CommandRequest) (
 	rsp *model.CommandResponse, err error) {
 	reqByte, _ := json.Marshal(req)
-	fmt.Println(string(reqByte))
 	rspByte, err := s.client.Post(ctx, "command", reqByte)
 	if err != nil {
 		return nil, err

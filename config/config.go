@@ -20,8 +20,11 @@ type RemoteAddress struct {
 }
 
 type Config struct {
-	ProjectPath   string        `mapstructure:"project_path"`
-	RemoteAddress RemoteAddress `mapstructure:"remote_address"`
+	ProjectPath     string        `mapstructure:"project_path"`
+	BuildCmdFmt     string        `mapstructure:"build_cmd_fmt"`
+	CrossCompileCmd string        `mapstructure:"cross_compile_cmd"`
+	RunCmdFmt       string        `mapstructure:"run_cmd_fmt"`
+	RemoteAddress   RemoteAddress `mapstructure:"remote_address"`
 }
 
 // GetConfig 使用全局viper解析yaml配置

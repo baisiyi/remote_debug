@@ -1,4 +1,7 @@
 project_path: "/Users/Zhuanz/Documents/go/cmd/apiserver"
+build_cmd_fmt: 'go build -gcflags all="-N -l" -o %s'
+cross_compile_cmd: "GOOS=linux GOARCH=arm64"
+run_cmd_fmt: "./%s -config config.yaml"
 remote_address:
   remote_ip: "localhost"
   remote_port: "8081"
