@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -44,7 +45,13 @@ func (a *Impl) CommandHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 异步执行命令
 	go func(req model.CommandRequest) {
-		_, _ = a.executeCommand(req)
+		ret, err := a.executeCommand(req)
+		if err != nil {
+			log.Printf("execute command error: %v", err)
+		}
+		if len(ret) > 0 {
+			log.Printf("execute command ret: %v", ret)
+		}
 	}(req)
 
 	// 立即返回响应

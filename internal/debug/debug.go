@@ -100,7 +100,7 @@ func (d *DebugImpl) runProject(ctx context.Context) {
 		fmt.Printf("获取配置失败：%v", err)
 		return
 	}
-	dlvCmd := "dlv exec %s --headless --listen=:2345 --accept-multiclient %s"
+	dlvCmd := "dlv exec %s --headless --api-version=2 --listen=:2345 --accept-multiclient %s"
 	if cfg.RunCmdFmt != "" {
 		options := strings.Split(cfg.RunCmdFmt, " ")
 		dlvCmd = fmt.Sprintf(dlvCmd, ObjectName, strings.Join(append([]string{"--"}, options[1:]...), " "))
