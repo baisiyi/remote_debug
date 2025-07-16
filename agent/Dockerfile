@@ -17,6 +17,7 @@ WORKDIR /app
 COPY --from=builder /app/agent /app/agent
 
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN apt-get update && apt-get install -y lsof
 
 EXPOSE 8081
 
