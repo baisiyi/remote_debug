@@ -16,6 +16,15 @@ if [  -n  "$debugPid"  ];  then
     kill -9 $debugPid;
 fi
 
+# 如果服务进程还在，服务进程也kill掉
+appPid=$(pgrep -f {{ .APP }})
+if [ -n "$appPid" ];  then
+	echo "[run.sh] kill -9 $appPid"
+	kill -9 $appPid;
+fi
+
+sleep 2
+
 echo "[run.sh] 启动 dlv..."
 nohup dlv \
   --log \
@@ -25,5 +34,5 @@ nohup dlv \
   --api-version=2 \
   --accept-multiclient \
   --check-go-version=false \
-  exec {{ .App }} -- {{ .RunCmdArgs}} 2>&1 &
+  exec {{ .App }} -- {{ .RunCmdArgs}} > /logs/app.log 2>&1 &
 `

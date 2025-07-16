@@ -23,6 +23,7 @@ type Config struct {
 	ProjectPath     string        `mapstructure:"project_path"`
 	BuildCmdFmt     string        `mapstructure:"build_cmd_fmt"`
 	CrossCompileCmd string        `mapstructure:"cross_compile_cmd"`
+	AppName         string        `mapstructure:"app_name"`
 	RunCmdArgs      string        `mapstructure:"run_cmd_args"`
 	RemoteAddress   RemoteAddress `mapstructure:"remote_address"`
 }

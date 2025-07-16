@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	ObjectName = "debug"
+	ObjectName = "%s_debug"
 )
 
 type DebugImpl struct {
@@ -75,7 +75,8 @@ func (d *DebugImpl) buildProject(ctx context.Context, projectPath string) (err e
 		fmt.Printf("获取配置失败：%v", err)
 		return
 	}
-	buildCmd := exec.Command("sh", "-c", fmt.Sprintf(cfg.BuildCmdFmt, ObjectName))
+	appName := fmt.Sprintf(ObjectName, cfg.AppName)
+	buildCmd := exec.Command("sh", "-c", fmt.Sprintf(cfg.BuildCmdFmt, appName))
 	buildCmd.Dir = projectPath
 	buildCmd.Stdout = os.Stdout
 	buildCmd.Stderr = os.Stderr
@@ -97,8 +98,8 @@ func (d *DebugImpl) syncProject(ctx context.Context, projectPath string) (err er
 		fmt.Printf("获取配置失败：%v", err)
 		return
 	}
-
-	err = d.serApi.UploadFile(ctx, fmt.Sprintf("%s/%s", projectPath, ObjectName), cfg.RemoteAddress.DestPath)
+	appName := fmt.Sprintf(ObjectName, cfg.AppName)
+	err = d.serApi.UploadFile(ctx, fmt.Sprintf("%s/%s", projectPath, appName), cfg.RemoteAddress.DestPath)
 	if err != nil {
 		fmt.Printf("可执行文件同步失败：%v", err)
 		return
@@ -114,8 +115,9 @@ func (d *DebugImpl) buildShell(ctx context.Context) (err error) {
 	}
 
 	// 1. 渲染 run.sh 脚本
+	appName := fmt.Sprintf(ObjectName, cfg.AppName)
 	tplParams := model.RunTplParams{
-		App:             ObjectName,
+		App:             appName,
 		DestPath:        cfg.RemoteAddress.DestPath,
 		ServerDebugPort: "2345", // 可根据需要从cfg获取
 		RunCmdArgs:      cfg.RunCmdArgs,
@@ -161,7 +163,7 @@ func (d *DebugImpl) runProject(ctx context.Context) {
 
 	runCmd := model.Command{
 		Root:    "sh",
-		Args:    []string{"-c", "./run.sh"},
+		Args:    []string{"-c", "sh run.sh"},
 		WorkDir: cfg.RemoteAddress.DestPath,
 		Env:     []string{},
 	}
