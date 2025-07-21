@@ -17,7 +17,7 @@ fi
 sleep 2
 
 echo "[run.sh] 启动 dlv..."
-/go/bin/dlv \
+/go/bin/dlv exec {{ .App }}\
   --log \
   --log-output=debugger \
   --listen=:{{ .ServerDebugPort }} \
@@ -25,7 +25,8 @@ echo "[run.sh] 启动 dlv..."
   --api-version=2 \
   --accept-multiclient \
   --check-go-version=false \
-  exec {{ .App }} -- {{ .RunCmdArgs}} > /logs/app.log 2>&1 &
+  --continue \
+  -- {{ .RunCmdArgs}} > /logs/app.log 2>&1 &
 
 dlv_pid=$!
 echo "[run.sh] dlv started with PID $dlv_pid"
