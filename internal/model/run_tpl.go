@@ -14,8 +14,6 @@ if [ -n "$debugPid" ]; then
     kill $debugPid
 fi
 
-sleep 2
-
 echo "[run.sh] 启动 dlv..."
 /go/bin/dlv exec {{ .App }}\
   --log \
